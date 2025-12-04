@@ -1,4 +1,6 @@
 ﻿from Controller.GController import GController
+from Model.GModel import GModel
 
-console = GController()
+model = GModel()
+console = GController(model)
 console.start()

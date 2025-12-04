@@ -1,12 +1,11 @@
 import tkinter as tk
 
-
 class GView:
     def __init__(self, controller):
         self.controller = controller
         self.root = tk.Tk()
         self.root.title("Farm Simulator")
-        self.window_width = 400
+        self.window_width = 650
         self.window_height = 375
         self.screen_width = self.root.winfo_screenwidth()
         self.screen_height = self.root.winfo_screenheight()
@@ -14,7 +13,7 @@ class GView:
         y = (self.screen_height - self.window_height) // 2
         self.root.geometry(f"{self.window_width}x{self.window_height}+{x}+{y}")
 
-        # Top grid frame
+        # Top frame with info
         self.top_frame = tk.Frame(self.root)
         self.top_frame.pack(side="top", fill="x", pady=10)
 
@@ -26,21 +25,24 @@ class GView:
         self.label_money = tk.Label(self.top_frame, text=f"Money left: {self.money}")
         self.label_money.pack(side="right", padx=20)
 
-        # Middle grid frame
+        # Center frame with plots
         self.center_frame = tk.Frame(self.root)
-        self.center_frame.pack(expand=True)  
+        self.center_frame.pack(expand=True, pady=20)
 
-        self.sub_frame = tk.Frame(self.center_frame)
-        self.sub_frame.pack()
+        self.plots = []
+        for i in range(5):
+            plot_frame = tk.Frame(self.center_frame)
+            plot_frame.grid(row=0, column=i, padx=10)
 
-        for r in range(5):
-            self.sub_frame.rowconfigure(r, weight=1)
-            for c in range(5):
-                self.sub_frame.columnconfigure(c, weight=1)
-                btn = tk.Button(self.sub_frame, text=f"{r}:{c}", width=4, height=2)
-                btn.grid(row=r, column=c, sticky="nsew", padx=2, pady=2)
+            plant_label = tk.Label(plot_frame, text=f"Plot {i+1}", width=12, height=6, relief="ridge", bg="lightgreen")
+            plant_label.pack()
 
-        # Bottom grid frame
+            btn = tk.Button(plot_frame, text="Plant")
+            btn.pack(pady=5)
+
+            self.plots.append((plant_label, btn))
+
+        # Lower frame with buttons
         self.bottom_frame = tk.Frame(self.root)
         self.bottom_frame.pack(side="bottom", fill="x", pady=10)
 
@@ -52,5 +54,3 @@ class GView:
 
     def start(self):
         self.root.mainloop()
-
-

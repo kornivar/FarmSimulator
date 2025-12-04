@@ -1,10 +1,9 @@
 from View.GView import GView
-from Model.GModel import GModel
 
 class GController:
-    def __init__(self):
+    def __init__(self, gmodel):
+        self.gmodel = gmodel
         self.gview = GView(self)
-        self.gmodel = GModel()
 
     def start(self):
         self.gview.start()
