@@ -1,5 +1,5 @@
 ﻿from Controller.GController import GController
-from Model.GModel import GModel
+from Models.GModel import GModel
 
 model = GModel()
 console = GController(model)

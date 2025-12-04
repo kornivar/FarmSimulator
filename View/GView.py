@@ -1,18 +1,23 @@
 import tkinter as tk
+from turtle import width
 
 class GView:
     def __init__(self, controller):
         self.controller = controller
         self.root = tk.Tk()
         self.root.title("Farm Simulator")
-        self.window_width = 650
-        self.window_height = 375
-        self.screen_width = self.root.winfo_screenwidth()
-        self.screen_height = self.root.winfo_screenheight()
-        x = (self.screen_width - self.window_width) // 2
-        y = (self.screen_height - self.window_height) // 2
-        self.root.geometry(f"{self.window_width}x{self.window_height}+{x}+{y}")
+        self.window_width = 1050
+        self.window_height = 675
+        
+        self.center(self.root, self.window_width, self.window_height)
 
+    def center(self, window, width, height):
+        window.update_idletasks()
+        x = (window.winfo_screenwidth() - width) // 2
+        y = (window.winfo_screenheight() - height) // 2
+        window.geometry(f"{width}x{height}+{x}+{y}")
+
+    def create_interface(self):
         # Top frame with info
         self.top_frame = tk.Frame(self.root)
         self.top_frame.pack(side="top", fill="x", pady=10)
@@ -29,18 +34,32 @@ class GView:
         self.center_frame = tk.Frame(self.root)
         self.center_frame.pack(expand=True, pady=20)
 
-        self.plots = []
+        IMAGE_W, IMAGE_H = 150, 350
+
+        self.button_plots = []
         for i in range(5):
             plot_frame = tk.Frame(self.center_frame)
             plot_frame.grid(row=0, column=i, padx=10)
 
-            plant_label = tk.Label(plot_frame, text=f"Plot {i+1}", width=12, height=6, relief="ridge", bg="lightgreen")
-            plant_label.pack()
+            image_holder = tk.Frame(plot_frame, width=IMAGE_W, height=IMAGE_H)
+            image_holder.pack()
+            image_holder.pack_propagate(False)  
+
+            plant_label = tk.Label(image_holder, text="", bg="lightgreen",
+                                   compound="center", wraplength=IMAGE_W-10)
+            plant_label.pack(fill="both", expand=True)
 
             btn = tk.Button(plot_frame, text="Plant")
             btn.pack(pady=5)
 
-            self.plots.append((plant_label, btn))
+            self.button_plots.append({
+                "holder": image_holder,
+                "label": plant_label,
+                "button": btn,
+            })
+
+        for i, plot in enumerate(self.button_plots):
+            plot["button"].config(command=lambda i=i: self.controller.on_plot_button_press(i))
 
         # Lower frame with buttons
         self.bottom_frame = tk.Frame(self.root)
@@ -56,5 +75,42 @@ class GView:
         self.label_money.config(text=f"Money left: {self.controller.get_money()}")
         self.label_fertilizer.config(text=f"Fertilizer left: {self.controller.get_fertilizer()}")
 
+    def update_plot(self, plot_index):
+        plot = self.controller.get_plot(plot_index)
+        ui = self.button_plots[plot_index]
+        placeholder = self.controller.images.get("placeholder")
+
+        if plot.state == "empty":
+            if placeholder:
+                ui["label"].config(image=placeholder, text="", bg="lightgreen")
+                ui["label"].image = placeholder
+            else:
+                ui["label"].config(image="", text=f"Plot {plot_index+1}", bg="lightgreen")
+            ui["button"].config(text="Plant", state="normal")
+            return
+
+        plant = plot.plant.name
+
+        if plot.state == "growing":
+            ui["button"].config(text="Growing...", state="disabled")
+            img = self.controller.images.get(f"{plant}_0")
+            if img:
+                ui["label"].config(image=img, text="", bg=self.root["bg"])  
+                ui["label"].image = img
+            return
+
+        if plot.state == "ready":
+            img = self.controller.images.get(f"{plant}_3")
+            if img:
+                ui["label"].config(image=img, text="", bg=self.root["bg"])  
+                ui["label"].image = img
+            ui["button"].config(text="Harvest", state="normal")
+
+    def update_growing_plot(self, plot_index, img):
+        ui = self.button_plots[plot_index]
+        ui["label"].config(image=img, text="", bg=self.root["bg"])
+        ui["label"].image = img
+
     def start(self):
+        self.create_interface()
         self.root.mainloop()
