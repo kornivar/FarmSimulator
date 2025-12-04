@@ -46,11 +46,15 @@ class GView:
         self.bottom_frame = tk.Frame(self.root)
         self.bottom_frame.pack(side="bottom", fill="x", pady=10)
 
-        self.storage_button = tk.Button(self.bottom_frame, text="Storage")
+        self.storage_button = tk.Button(self.bottom_frame, text="Storage", command=self.controller.open_barn)
         self.storage_button.pack(side="left", padx=20)
 
-        self.shop_button = tk.Button(self.bottom_frame, text="Shop")
+        self.shop_button = tk.Button(self.bottom_frame, text="Shop", command = self.controller.open_shop)
         self.shop_button.pack(side="right", padx=20)
+
+    def update_money(self):
+        self.label_money.config(text=f"Money left: {self.controller.get_money()}")
+        self.label_fertilizer.config(text=f"Fertilizer left: {self.controller.get_fertilizer()}")
 
     def start(self):
         self.root.mainloop()

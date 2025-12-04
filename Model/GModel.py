@@ -20,7 +20,7 @@ class GModel:
         ]
         self.barn = {}
 
-    def grow(btn_name, grow_pos):
+    def grow(plant_id, grow_pos):
         pass
 
     def harvest(btn_name, harvest_pos):
