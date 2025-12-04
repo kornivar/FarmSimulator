@@ -1,4 +1,4 @@
-﻿from Controller.GController import GController
+﻿from Controllers.GController import GController
 from Models.GModel import GModel
 
 model = GModel()
