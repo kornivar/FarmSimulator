@@ -1,3 +1,0 @@
-money=30
-barn=carrot:2
-fertilizer=0

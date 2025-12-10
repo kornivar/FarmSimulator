@@ -1,6 +1,7 @@
 from View.GView import GView
 from Controllers.BController import BController
 from Controllers.SController import SController
+from Services.ResourceService import ResourceService
 import tkinter as tk
 from tkinter import messagebox
 
@@ -12,11 +13,13 @@ class GController:
         self.shopc = SController(gmodel, self)
 
         self.gview = GView(self)
+        self.gmodel.controller = self
+
         self.images = {} 
-        self.load_images()
+        self.load_images()  
+
         self.gmodel.load_game()
         self.autosave()
-        self.gmodel.controller = self
 
     def start(self):
         self.gview.start()
@@ -91,12 +94,13 @@ class GController:
             messagebox.showwarning("Not enough money", "You don't have enough money to buy this plant!")
 
     def load_images(self):
+        ResourceService.init()
         IMAGE_W, IMAGE_H = 150, 350
         plant_names = [plant.name for plant in self.gmodel.plants]
         stages = 4  
         for i in range(stages):
             for name in plant_names:
-                img_path = f"img/{name}_{i}.png"
+                img_path = ResourceService.get_resource(f"{name}_{i}")
                 try:
                     img = tk.PhotoImage(file=img_path)
                     self.images[f"{name}_{i}"] = img
