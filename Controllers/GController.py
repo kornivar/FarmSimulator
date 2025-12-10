@@ -14,6 +14,8 @@ class GController:
         self.gview = GView(self)
         self.images = {} 
         self.load_images()
+        self.gmodel.load_game()
+        self.autosave()
         self.gmodel.controller = self
 
     def start(self):
@@ -88,6 +90,20 @@ class GController:
         else:
             messagebox.showwarning("Not enough money", "You don't have enough money to buy this plant!")
 
+    def load_images(self):
+        IMAGE_W, IMAGE_H = 150, 350
+        plant_names = [plant.name for plant in self.gmodel.plants]
+        stages = 4  
+        for i in range(stages):
+            for name in plant_names:
+                img_path = f"img/{name}_{i}.png"
+                try:
+                    img = tk.PhotoImage(file=img_path)
+                    self.images[f"{name}_{i}"] = img
+                except Exception as e:
+                    print(f"Error loading image {img_path}: {e}")
+        self.images["placeholder"] = tk.PhotoImage(width=IMAGE_W, height=IMAGE_H)
+
     def on_plot_button_press(self, plot_index):
         plot = self.gmodel.plots[plot_index]
 
@@ -104,20 +120,6 @@ class GController:
             self.gmodel.harvest(plot_index)
             self.gview.update_plot(plot_index)
             from tkinter import messagebox
-
-    def load_images(self):
-        IMAGE_W, IMAGE_H = 150, 350
-        plant_names = [plant.name for plant in self.gmodel.plants]
-        stages = 4  
-        for i in range(stages):
-            for name in plant_names:
-                img_path = f"img/{name}_{i}.png"
-                try:
-                    img = tk.PhotoImage(file=img_path)
-                    self.images[f"{name}_{i}"] = img
-                except Exception as e:
-                    print(f"Error loading image {img_path}: {e}")
-        self.images["placeholder"] = tk.PhotoImage(width=IMAGE_W, height=IMAGE_H)
 
     def on_tick_update(self, plot_index):
         plot = self.get_plot(plot_index)
@@ -136,3 +138,8 @@ class GController:
 
     def buy_fertilizer(self, price):
         self.shopc.buy_fertilizer(price)
+
+    def autosave(self):
+        self.gmodel.save_game()
+        self.gview.root.after(1000, self.autosave)
+
