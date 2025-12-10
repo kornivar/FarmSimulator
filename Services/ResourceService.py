@@ -1,14 +1,13 @@
 import json
 import os
 
-program_data = "program_data.json"
-
 class ResourceService:
+    program_data = "program_data.json"
     resources = {}
 
     @staticmethod
     def init():
-        if not os.path.exists(program_data):
+        if not os.path.exists(ResourceService.program_data):
             default_resources = {
                 "carrot_0": "Resources/Images/carrot_1.png",
                 "carrot_1": "Resources/Images/carrot_2.png",
@@ -24,13 +23,13 @@ class ResourceService:
                 "wheat_3": "Resources/Images/wheat_4.png",
             }
             try:
-                with open(program_data, "w") as f:
+                with open(ResourceService.program_data, "w") as f:
                     json.dump(default_resources, f, indent=4)
             except Exception as e:
                 print(f"Error creating JSON: {e}")
 
         try:
-            with open(program_data, "r") as f:
+            with open(ResourceService.program_data, "r") as f:
                 ResourceService.resources = json.load(f)
         except Exception as e:
             print(f"Error creating JSON: {e}")

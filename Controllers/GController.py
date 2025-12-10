@@ -2,6 +2,8 @@ from View.GView import GView
 from Controllers.BController import BController
 from Controllers.SController import SController
 from Services.ResourceService import ResourceService
+from Services.AutosaveService import AutosaveService
+
 import tkinter as tk
 from tkinter import messagebox
 
@@ -11,6 +13,7 @@ class GController:
 
         self.barnc = BController(gmodel, self)
         self.shopc = SController(gmodel, self)
+        self.autosave_service = AutosaveService(gmodel)
 
         self.gview = GView(self)
         self.gmodel.controller = self
@@ -18,7 +21,7 @@ class GController:
         self.images = {} 
         self.load_images()  
 
-        self.gmodel.load_game()
+        self.autosave_service.load_game()
         self.autosave()
 
     def start(self):
@@ -144,6 +147,6 @@ class GController:
         self.shopc.buy_fertilizer(price)
 
     def autosave(self):
-        self.gmodel.save_game()
+        self.autosave_service.save_game()
         self.gview.root.after(1000, self.autosave)
 

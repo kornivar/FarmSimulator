@@ -1,5 +1,4 @@
 import tkinter as tk
-from turtle import width
 
 class GView:
     def __init__(self, controller):
