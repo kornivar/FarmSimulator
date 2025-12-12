@@ -3,7 +3,7 @@ from Models.PlotModel import PlotModel
 
 class GModel:
     def __init__(self):
-        self.money = 50
+        self.money = 30
         self.fertilizer = 0
         self.sell_prices = {
             1: 15,

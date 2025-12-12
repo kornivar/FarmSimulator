@@ -13,7 +13,9 @@ class GController:
 
         self.barnc = BController(gmodel, self)
         self.shopc = SController(gmodel, self)
+
         self.autosave_service = AutosaveService(gmodel)
+        self.autosave_service.controller = self
 
         self.gview = GView(self)
         self.gmodel.controller = self
@@ -23,9 +25,26 @@ class GController:
 
         self.autosave_service.load_game()
         self.autosave()
+        self.unlock_base_plots()
+        
 
     def start(self):
         self.gview.start()
+
+    def load_images(self):
+        ResourceService.init()
+        IMAGE_W, IMAGE_H = 150, 350
+        plant_names = [plant.name for plant in self.gmodel.plants]
+        stages = 4  
+        for i in range(stages):         
+            for name in plant_names:
+                img_path = ResourceService.get_resource(f"{name}_{i}")
+                try:
+                    img = tk.PhotoImage(file=img_path)
+                    self.images[f"{name}_{i}"] = img
+                except Exception as e:
+                    print(f"Error loading image {img_path}: {e}")
+        self.images["placeholder"] = tk.PhotoImage(width=IMAGE_W, height=IMAGE_H)
 
     def get_money(self):
         return self.gmodel.money
@@ -42,6 +61,25 @@ class GController:
     def open_barn(self):
         self.barnc.open_barn()
 
+    def on_plot_button_press(self, plot_index):
+        plot = self.gmodel.plots[plot_index]
+
+        if plot.state == "locked":
+            self.purchase_plot(plot_index)
+        elif plot.state == "empty":
+            self.open_plant_menu(plot_index)
+        elif plot.state == "growing":
+            from tkinter import messagebox
+            messagebox.showinfo(
+                "Plot Status",
+                f"Plot {plot_index + 1} is still growing. Time left: {plot.remaining // 1000} seconds."
+            )
+        elif plot.state == "ready":
+            plot_name = plot.plant.name 
+            self.gmodel.harvest(plot_index)
+            self.gview.update_plot(plot_index)
+            from tkinter import messagebox
+
     def open_plant_menu(self, plot_index):
         plant_menu = tk.Toplevel()
         plant_menu.title("Select Plant")
@@ -55,7 +93,39 @@ class GController:
             plant_btn = tk.Button(frame, text=f"${price}", command=lambda p=plant: self.start_growing(plot_index, p, plant_menu))
             plant_btn.pack(side="right", padx=5)
 
-    def _start_plot_loop(self, plot_index):
+    def on_tick_update(self, plot_index):
+        plot = self.get_plot(plot_index)
+
+        total = plot.plant.base_time
+        done = total - plot.remaining
+
+        stage = min(3, int(done / (total / 4))) 
+
+        img_key = f"{plot.plant.name}_{stage}"
+        if img_key in self.images:
+            self.gview.update_growing_plot(plot_index, self.images[img_key])
+
+    def purchase_plot(self, plot_index):
+        answer = messagebox.askyesno("Unlock Plot", "Unlocking this plot costs $600.")
+        if not answer:
+            return
+        else:
+            plot_price = 600
+            if self.gmodel.money >= plot_price:
+                self.gmodel.money -= plot_price
+                self.gview.update_money()
+                self.gmodel.plots[plot_index].state = "empty"
+                self.gview.update_plot(plot_index)
+            else:
+                messagebox.showwarning("Not enough money", "You don't have enough money to unlock this plot!")
+
+    def unlock_base_plots(self):
+        for i in range(3):
+            plot = self.gmodel.plots[i]
+            if plot.state == "locked":
+                plot.state = "empty"
+
+    def start_plot_loop(self, plot_index):
         plot = self.gmodel.plots[plot_index]
 
         if plot.remaining <= 0:
@@ -74,7 +144,7 @@ class GController:
 
         plot.remaining -= 1000
 
-        self.gview.root.after(1000, lambda: self._start_plot_loop(plot_index))
+        self.gview.root.after(1000, lambda: self.start_plot_loop(plot_index))
 
     def start_growing(self, plot_index, plant, menu_window):
         price = self.gmodel.buy_prices[plant.id]
@@ -92,59 +162,19 @@ class GController:
 
             menu_window.destroy()
 
-            self._start_plot_loop(plot_index)
+            self.start_plot_loop(plot_index)
         else:
             messagebox.showwarning("Not enough money", "You don't have enough money to buy this plant!")
-
-    def load_images(self):
-        ResourceService.init()
-        IMAGE_W, IMAGE_H = 150, 350
-        plant_names = [plant.name for plant in self.gmodel.plants]
-        stages = 4  
-        for i in range(stages):
-            for name in plant_names:
-                img_path = ResourceService.get_resource(f"{name}_{i}")
-                try:
-                    img = tk.PhotoImage(file=img_path)
-                    self.images[f"{name}_{i}"] = img
-                except Exception as e:
-                    print(f"Error loading image {img_path}: {e}")
-        self.images["placeholder"] = tk.PhotoImage(width=IMAGE_W, height=IMAGE_H)
-
-    def on_plot_button_press(self, plot_index):
-        plot = self.gmodel.plots[plot_index]
-
-        if plot.state == "empty":
-            self.open_plant_menu(plot_index)
-        elif plot.state == "growing":
-            from tkinter import messagebox
-            messagebox.showinfo(
-                "Plot Status",
-                f"Plot {plot_index + 1} is still growing. Time left: {plot.remaining // 1000} seconds."
-            )
-        elif plot.state == "ready":
-            plot_name = plot.plant.name 
-            self.gmodel.harvest(plot_index)
-            self.gview.update_plot(plot_index)
-            from tkinter import messagebox
-
-    def on_tick_update(self, plot_index):
-        plot = self.get_plot(plot_index)
-
-        total = plot.plant.base_time
-        done = total - plot.remaining
-
-        stage = min(3, int(done / (total / 4))) 
-
-        img_key = f"{plot.plant.name}_{stage}"
-        if img_key in self.images:
-            self.gview.update_growing_plot(plot_index, self.images[img_key])
 
     def sell_plant(self, plant_name, price):
         self.shopc.sell_plant(plant_name, price)
 
     def buy_fertilizer(self, price):
         self.shopc.buy_fertilizer(price)
+
+    def resume_growth(self, plot):
+        plot_index = self.gmodel.plots.index(plot)
+        self.start_plot_loop(plot_index)
 
     def autosave(self):
         self.autosave_service.save_game()

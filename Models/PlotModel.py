@@ -3,7 +3,7 @@ from Models.Plant import Plant
 class PlotModel:
     def __init__(self, index):
         self.index = index
-        self.state = "empty"
+        self.state = "locked"
         self.plant = None
         self.remaining = 0
         self.timer_id = None

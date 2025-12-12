@@ -7,6 +7,7 @@ class GView:
         self.root.title("Farm Simulator")
         self.window_width = 1050
         self.window_height = 675
+        self.button_plots = []
         
         self.center(self.root, self.window_width, self.window_height)
 
@@ -35,7 +36,7 @@ class GView:
 
         IMAGE_W, IMAGE_H = 150, 350
 
-        self.button_plots = []
+        #Plots creation
         for i in range(5):
             plot_frame = tk.Frame(self.center_frame)
             plot_frame.grid(row=0, column=i, padx=10)
@@ -44,11 +45,11 @@ class GView:
             image_holder.pack()
             image_holder.pack_propagate(False)  
 
-            plant_label = tk.Label(image_holder, text="", bg="lightgreen",
+            plant_label = tk.Label(image_holder, text="Locked", bg="gray",
                                    compound="center", wraplength=IMAGE_W-10)
             plant_label.pack(fill="both", expand=True)
 
-            btn = tk.Button(plot_frame, text="Plant")
+            btn = tk.Button(plot_frame, text="Unlock", state="normal")
             btn.pack(pady=5)
 
             self.button_plots.append({
@@ -78,6 +79,12 @@ class GView:
         plot = self.controller.get_plot(plot_index)
         ui = self.button_plots[plot_index]
         placeholder = self.controller.images.get("placeholder")
+
+        if plot.state == "locked":
+            ui["label"].config(image="", text="$600", bg="gray")
+            ui["button"].config(text="Unlock", state="normal")
+            return
+
 
         if plot.state == "empty":
             if placeholder:
@@ -112,4 +119,14 @@ class GView:
 
     def start(self):
         self.create_interface()
+
+        # Initial plot updates(locked/empty)
+        for i in range(5):
+            self.update_plot(i)
+
+        # Resume growth on growing plots
+        for plot in self.controller.gmodel.plots:
+            if plot.state == "growing" and plot.remaining > 0:
+                self.controller.resume_growth(plot)
+
         self.root.mainloop()
