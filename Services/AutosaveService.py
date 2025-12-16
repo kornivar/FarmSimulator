@@ -8,17 +8,14 @@ class AutosaveService:
         self.program_autosave = "program_autosave.json"
         self.data = {}
 
-    def print(self):
-        json_string = json.dumps(self.data, indent=4)
-        print("JSON String:")
-        print(json_string)
-
     def save_game(self):
         plots  =   [              
             {
                     "state": plot.state,
                     "plant_id": plot.plant.id if plot.plant else None,
-                    "remaining": plot.remaining
+                    "remaining": plot.remaining,
+                    "plot_type": plot.plot_type,
+                    "super_fertilizer": plot.fertilizer_charges,
             } for plot in self.gmodel.plots
         ]
 
@@ -61,4 +58,6 @@ class AutosaveService:
             else:
                 plot.plant = None
             plot.remaining = plot_data.get("remaining", 0)
+            plot.plot_type = plot_data.get("plot_type", "basic")
+            plot.fertilizer_charges = plot_data.get("super_fertilizer", 0)
 

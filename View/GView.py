@@ -82,7 +82,7 @@ class GView:
 
         if plot.state == "locked":
             ui["label"].config(image="", text="$600", bg="gray")
-            ui["button"].config(text="Unlock", state="normal")
+            ui["button"].config(text="Unlock")
             return
 
 
@@ -92,13 +92,13 @@ class GView:
                 ui["label"].image = placeholder
             else:
                 ui["label"].config(image="", text=f"Plot {plot_index+1}", bg="lightgreen")
-            ui["button"].config(text="Plant", state="normal")
+            ui["button"].config(text="Plant")
             return
 
         plant = plot.plant.name
 
         if plot.state == "growing":
-            ui["button"].config(text="Growing...", state="disabled")
+            ui["button"].config(text="Growing...")
             img = self.controller.images.get(f"{plant}_0")
             if img:
                 ui["label"].config(image=img, text="", bg=self.root["bg"])  
@@ -110,7 +110,7 @@ class GView:
             if img:
                 ui["label"].config(image=img, text="", bg=self.root["bg"])  
                 ui["label"].image = img
-            ui["button"].config(text="Harvest", state="normal")
+            ui["button"].config(text="Harvest")
 
     def update_growing_plot(self, plot_index, img):
         ui = self.button_plots[plot_index]

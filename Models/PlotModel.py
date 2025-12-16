@@ -6,16 +6,26 @@ class PlotModel:
         self.state = "locked"
         self.plant = None
         self.remaining = 0
-        self.timer_id = None
+
+        self.plot_type = "basic"
+        self.fertilizer_charges = 0
+
+    def unlock(self):
+        if self.state == "locked":
+            self.state = "empty"
 
     def start_growth(self, plant: Plant, fertilizer_available=False):
         self.state = "growing"
         self.plant = plant
 
-        if fertilizer_available:
-            self.remaining = int(plant.base_time * 0.8) 
+        if self.fertilizer_charges > 0:
+            self.fertilizer_charges -= 1
+            self.remaining = int(plant.base_time * 0.8)
         else:
-            self.remaining = plant.base_time
+            if fertilizer_available:
+                self.remaining = int(plant.base_time * 0.8) 
+            else:
+                self.remaining = plant.base_time
 
     def tick(self, callback):
         if self.remaining <= 0:

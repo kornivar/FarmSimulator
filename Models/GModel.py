@@ -3,7 +3,7 @@ from Models.PlotModel import PlotModel
 
 class GModel:
     def __init__(self):
-        self.money = 30
+        self.money = 700
         self.fertilizer = 0
         self.sell_prices = {
             1: 15,
@@ -32,7 +32,7 @@ class GModel:
         plot.plant = None
         plot.remaining = 0
 
-    def start_thread(self, plant_id, plot_index, fertilizer_available=False):
+    def plot_init(self, plant_id, plot_index, fertilizer_available=False):
         plot = self.plots[plot_index]
         plant = next(p for p in self.plants if p.id == plant_id)
         plot.start_growth(plant, fertilizer_available)

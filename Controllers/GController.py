@@ -3,6 +3,8 @@ from Controllers.BController import BController
 from Controllers.SController import SController
 from Services.ResourceService import ResourceService
 from Services.AutosaveService import AutosaveService
+from DTO.PlotPurchaseDTO import PlotPurchaseDTO
+from DTO.PlotMapper import PlotMapper
 
 import tkinter as tk
 from tkinter import messagebox
@@ -15,7 +17,6 @@ class GController:
         self.shopc = SController(gmodel, self)
 
         self.autosave_service = AutosaveService(gmodel)
-        self.autosave_service.controller = self
 
         self.gview = GView(self)
         self.gmodel.controller = self
@@ -90,7 +91,7 @@ class GController:
             frame.pack(pady=5)
             tk.Label(frame, text=f"{plant.name} - Growth time: {plant.base_time // 1000} seconds").pack(side="left", padx=5)
             price = self.gmodel.buy_prices[plant.id]
-            plant_btn = tk.Button(frame, text=f"${price}", command=lambda p=plant: self.start_growing(plot_index, p, plant_menu))
+            plant_btn = tk.Button(frame, text=f"${price}", command=lambda p=plant: self.grow_init(plot_index, p, plant_menu))
             plant_btn.pack(side="right", padx=5)
 
     def on_tick_update(self, plot_index):
@@ -113,8 +114,11 @@ class GController:
             plot_price = 600
             if self.gmodel.money >= plot_price:
                 self.gmodel.money -= plot_price
+                dto = PlotPurchaseDTO(has_upgrade=True, plot_type="upgrade")
+                new_plot = PlotMapper.from_purchase(dto, plot_index)
+                new_plot.unlock()
+                self.gmodel.plots[plot_index] = new_plot
                 self.gview.update_money()
-                self.gmodel.plots[plot_index].state = "empty"
                 self.gview.update_plot(plot_index)
             else:
                 messagebox.showwarning("Not enough money", "You don't have enough money to unlock this plot!")
@@ -124,6 +128,36 @@ class GController:
             plot = self.gmodel.plots[i]
             if plot.state == "locked":
                 plot.state = "empty"
+
+    def grow_init(self, plot_index, plant, menu_window):
+        # Check for fertilizer charges on the upgraded plot
+        fert_charges = self.gmodel.plots[plot_index].fertilizer_charges > 0
+        use_fertilizer = False
+
+        if fert_charges:
+            messagebox.showinfo("Fertilizer Available", f"This plot has fertilizer charges available and will use them first. \
+                \n{self.gmodel.plots[plot_index].fertilizer_charges} remaining")
+
+        price = self.gmodel.buy_prices[plant.id]
+        if self.gmodel.money >= price:
+            self.gmodel.money -= price
+
+            # Use fertilizer from plot charges first, then from global stock
+            if not fert_charges:
+                use_fertilizer = self.gmodel.fertilizer > 0
+                if use_fertilizer:
+                    self.gmodel.fertilizer -= 1
+
+            self.gmodel.plot_init(plant.id, plot_index, fertilizer_available=use_fertilizer)
+
+            self.gview.update_money()
+            self.gview.update_plot(plot_index)
+
+            menu_window.destroy()
+
+            self.start_plot_loop(plot_index)
+        else:
+            messagebox.showwarning("Not enough money", "You don't have enough money to buy this plant!")
 
     def start_plot_loop(self, plot_index):
         plot = self.gmodel.plots[plot_index]
@@ -145,26 +179,6 @@ class GController:
         plot.remaining -= 1000
 
         self.gview.root.after(1000, lambda: self.start_plot_loop(plot_index))
-
-    def start_growing(self, plot_index, plant, menu_window):
-        price = self.gmodel.buy_prices[plant.id]
-        if self.gmodel.money >= price:
-            self.gmodel.money -= price
-
-            use_fertilizer = self.gmodel.fertilizer > 0
-            if use_fertilizer:
-                self.gmodel.fertilizer -= 1
-
-            self.gmodel.start_thread(plant.id, plot_index, fertilizer_available=use_fertilizer)
-
-            self.gview.update_money()
-            self.gview.update_plot(plot_index)
-
-            menu_window.destroy()
-
-            self.start_plot_loop(plot_index)
-        else:
-            messagebox.showwarning("Not enough money", "You don't have enough money to buy this plant!")
 
     def sell_plant(self, plant_name, price):
         self.shopc.sell_plant(plant_name, price)
