@@ -15,7 +15,7 @@ class LogService:
         log_file = log_dir / "game.log"
 
         logging.basicConfig(
-            level=logging.INFO,
+            level=logging.WARNING,
             format="{asctime} - {levelname} - {name} - {message}",
             style="{",
             datefmt="%Y-%m-%d %H:%M",

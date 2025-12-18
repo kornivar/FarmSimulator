@@ -1,8 +1,11 @@
 from Models.Plant import Plant
 from Models.PlotModel import PlotModel
+import logging
+logger = logging.getLogger(__name__)
 
 class GModel:
     def __init__(self):
+        logger.info("Initializing Game Model...")
         self.money = 700
         self.fertilizer = 0
         self.sell_prices = {
@@ -24,6 +27,7 @@ class GModel:
         self.plots = [PlotModel(i) for i in range(5)]
 
     def harvest(self, plot_index):
+        logger.info(f"Harvesting plot at index {plot_index}...")
         plot = self.plots[plot_index]
         name = plot.plant.name
 
@@ -33,6 +37,7 @@ class GModel:
         plot.remaining = 0
 
     def plot_init(self, plant_id, plot_index, fertilizer_available=False):
+        logger.info(f"Initializing plot at index {plot_index} with plant ID {plant_id}...")
         plot = self.plots[plot_index]
         plant = next(p for p in self.plants if p.id == plant_id)
         plot.start_growth(plant, fertilizer_available)
