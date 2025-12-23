@@ -5,7 +5,7 @@ class MWhatsUpDoc(Mission):
 		super().__init__(mission_id=0, name="What's up, Doc?", description="Collect 50 carrots.", reward_gold=200)
 		self.collected = 0
 
-	def on_carrot_collected(self, amount=1):
+	def on_plant_collected(self, plant_name, amount=1):
 		if self.completed:
 			return
 		self.collected += amount

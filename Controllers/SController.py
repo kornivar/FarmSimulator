@@ -60,8 +60,10 @@ class SController:
             self.gmodel.money -= price
             self.gmodel.fertilizer += 1
             self.main.gview.update_money()
+            return True
         else:
             messagebox.showwarning("Not enough money", "You don't have enough money!")
+            return False
 
 
 

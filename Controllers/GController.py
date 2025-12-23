@@ -96,8 +96,7 @@ class GController:
             elif plot.state == "ready":
                 plot_name = plot.plant.name 
                 self.gmodel.harvest(plot_index)
-                self.missionc.on_harvest(plot_name)
-               
+                self.missionc.on_plant_collected(self.gmodel.plots[plot_index].plant.name)
                 self.gview.update_plot(plot_index)
                 from tkinter import messagebox
         except Exception as e:
@@ -173,7 +172,7 @@ class GController:
         reward_btn.pack(side="right", padx=10, pady=10)
 
     def _claim_mission_reward(self, button):
-        self.missionc.update()
+        self.missionc.update_missions()
         self.gview.update_money()
         button.config(state="disabled")
 
@@ -210,6 +209,7 @@ class GController:
                     self.gmodel.plots[plot_index] = new_plot
                     self.gview.update_money()
                     self.gview.update_plot(plot_index)
+                    self.missionc.on_plot_unlocked()
                 except Exception as e:
                     logger.error(f"Error purchasing plot: {e}")
             else:
@@ -291,7 +291,9 @@ class GController:
 
     def buy_fertilizer(self, price):
         logger.info(f"Buying fertilizer for price {price}...")
-        self.shopc.buy_fertilizer(price)
+        is_able = self.shopc.buy_fertilizer(price)
+        if is_able:
+            self.missionc.on_fertilizer_bought()
 
     def resume_growth(self, plot):
         logger.info(f"Resuming growth for plot {plot}")

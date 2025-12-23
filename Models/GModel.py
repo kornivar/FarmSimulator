@@ -1,6 +1,10 @@
 from Models.Plant import Plant
 from Models.PlotModel import PlotModel
 from Models.Missions.MWhatsUpDoc import MWhatsUpDoc
+from Models.Missions.MCornFan import MCornFan
+from Models.Missions.MFertilizerCollector import MFertilizerCollector
+from Models.Missions.MLandman import MLandman
+from Models.Missions.MFarmer import MFarmer 
 import logging
 logger = logging.getLogger(__name__)
 
@@ -27,6 +31,10 @@ class GModel:
 
         self.missions = {
             0: MWhatsUpDoc(),
+            1: MCornFan(),
+            2: MFertilizerCollector(),
+            3: MLandman(),
+            4: MFarmer(),
         }
 
         self.barn = {}
