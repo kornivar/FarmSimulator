@@ -1,16 +1,16 @@
-from venv import logger
+import logging
+logger = logging.getLogger(__name__)
 from View.GView import GView
 from Controllers.BController import BController
 from Controllers.SController import SController
+from Controllers.MissionController import MissionController
 from Services.ResourceService import ResourceService
 from Services.AutosaveService import AutosaveService
 from DTO.PlotPurchaseDTO import PlotPurchaseDTO
 from DTO.PlotMapper import PlotMapper
-import logging
-logger = logging.getLogger(__name__)
 
 import tkinter as tk
-from tkinter import E, messagebox
+from tkinter import messagebox
 
 class GController:
     def __init__(self, gmodel):
@@ -19,6 +19,7 @@ class GController:
 
         self.barnc = BController(gmodel, self)
         self.shopc = SController(gmodel, self)
+        self.missionc = MissionController(gmodel)
 
         self.autosave_service = AutosaveService(gmodel)
 
@@ -95,6 +96,8 @@ class GController:
             elif plot.state == "ready":
                 plot_name = plot.plant.name 
                 self.gmodel.harvest(plot_index)
+                self.missionc.on_harvest(plot_name)
+               
                 self.gview.update_plot(plot_index)
                 from tkinter import messagebox
         except Exception as e:
@@ -117,6 +120,64 @@ class GController:
         except Exception as e:
             logger.error(f"Error opening plant menu: {e}")
 
+    def open_achievements(self):
+        logger.info("Opening achievements...")
+        try:
+            window = tk.Toplevel(self.gview.root)
+            window.title("Achievements")
+            self.gview.center(window, 500, 400)
+
+            container = tk.Frame(window)
+            container.pack(fill="both", expand=True, padx=10, pady=10)
+
+            for mission in self.gmodel.missions.values():
+                self._create_mission_row(container, mission)
+        except Exception as e:
+            logger.error(f"Error opening achievements: {e}")
+
+    def _create_mission_row(self, parent, mission):
+        bg_color = "#b6fcb6" if mission.completed else "#f0f0f0"
+
+        frame = tk.Frame(parent, bg=bg_color, bd=1, relief="solid")
+        frame.pack(fill="x", pady=5)
+
+        text_frame = tk.Frame(frame, bg=bg_color)
+        text_frame.pack(side="left", fill="both", expand=True, padx=10, pady=5)
+
+        tk.Label(
+            text_frame,
+            text=mission.name,
+            font=("Arial", 12, "bold"),
+            bg=bg_color
+        ).pack(anchor="w")
+
+        tk.Label(
+            text_frame,
+            text=mission.description,
+            bg=bg_color,
+            wraplength=300,
+            justify="left"
+        ).pack(anchor="w")
+
+        reward_btn = tk.Button(
+            frame,
+            text=f"Get reward ({mission.reward_gold}$)",
+            command=lambda m=mission: self._claim_mission_reward(reward_btn)
+        )
+
+        if mission.completed and not mission.reward_given:
+            reward_btn.config(state="normal")
+        else:
+            reward_btn.config(state="disabled")
+
+        reward_btn.pack(side="right", padx=10, pady=10)
+
+    def _claim_mission_reward(self, button):
+        self.missionc.update()
+        self.gview.update_money()
+        button.config(state="disabled")
+
+        
     def on_tick_update(self, plot_index):
         logger.info(f"Tick update for plot index {plot_index}...")
         try:

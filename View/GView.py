@@ -72,11 +72,25 @@ class GView:
         self.bottom_frame = tk.Frame(self.root)
         self.bottom_frame.pack(side="bottom", fill="x", pady=10)
 
-        self.storage_button = tk.Button(self.bottom_frame, text="Storage", command=self.controller.open_barn)
-        self.storage_button.pack(side="left", padx=20)
+        left = tk.Frame(self.bottom_frame)
+        center = tk.Frame(self.bottom_frame)
+        right = tk.Frame(self.bottom_frame)
 
-        self.shop_button = tk.Button(self.bottom_frame, text="Shop", command = self.controller.open_shop)
-        self.shop_button.pack(side="right", padx=20)
+        left.pack(side="left", expand=True)
+        center.pack(side="left", expand=True)
+        right.pack(side="right", expand=True)
+
+        self.storage_button = tk.Button(left, text="Storage",
+                                        command=self.controller.open_barn)
+        self.storage_button.pack()
+
+        self.achievement_button = tk.Button(center, text="Achievements",
+                                            command=self.controller.open_achievements)
+        self.achievement_button.pack()
+
+        self.shop_button = tk.Button(right, text="Shop",
+                                     command=self.controller.open_shop)
+        self.shop_button.pack()
 
     def update_money(self):
         logger.info("Updating money and fertilizer display...")

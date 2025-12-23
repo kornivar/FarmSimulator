@@ -18,12 +18,21 @@ class AutosaveService:
                     "super_fertilizer": plot.fertilizer_charges,
             } for plot in self.gmodel.plots
         ]
+        missions = [
+            {
+                "mission_id": mission.mission_id,
+                "completed": mission.completed,
+                "reward_given": mission.reward_given,
+                "collected": getattr(mission, 'collected', 0),
+            } for mission in self.gmodel.missions.values()
+        ]
 
         self.data = {
             "money": self.gmodel.money,
             "fertilizer": self.gmodel.fertilizer,
             "barn": self.gmodel.barn,
             "plots": plots,
+            "missions": missions,
         }
 
         with open(self.program_autosave, 'w', encoding='utf-8') as f:
@@ -60,4 +69,13 @@ class AutosaveService:
             plot.remaining = plot_data.get("remaining", 0)
             plot.plot_type = plot_data.get("plot_type", "basic")
             plot.fertilizer_charges = plot_data.get("super_fertilizer", 0)
+
+        for mission_data in loaded_data.get("missions", []):
+            mission_id = mission_data.get("mission_id")
+            mission = self.gmodel.missions.get(mission_id)
+            if mission:
+                mission.completed = mission_data.get("completed", False)
+                mission.reward_given = mission_data.get("reward_given", False)
+                if hasattr(mission, 'collected'):
+                    mission.collected = mission_data.get("collected", 0)
 

@@ -1,5 +1,6 @@
 from Models.Plant import Plant
 from Models.PlotModel import PlotModel
+from Models.Missions.MWhatsUpDoc import MWhatsUpDoc
 import logging
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,11 @@ class GModel:
             Plant(2, "corn", 4000),
             Plant(3, "wheat", 9000),
         ]
+
+        self.missions = {
+            0: MWhatsUpDoc(),
+        }
+
         self.barn = {}
         self.plots = [PlotModel(i) for i in range(5)]
 
