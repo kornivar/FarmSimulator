@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class GModel:
     def __init__(self):
         logger.info("Initializing Game Model...")
-        self.money = 700
+        self.money = 1300
         self.fertilizer = 0
         self.sell_prices = {
             1: 15,

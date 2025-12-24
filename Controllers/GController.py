@@ -26,12 +26,19 @@ class GController:
         self.gview = GView(self)
         self.gmodel.controller = self
 
+        # track achievements window for live refresh
+        self.achievements_window = None
+
         self.images = {} 
         self.load_images()  
 
         self.autosave_service.load_game()
         self.autosave()
         self.unlock_base_plots()
+        try:
+            self.missionc.update_missions()
+        except Exception:
+            pass
         logger.info("Game Controller initialized.")
         
 
@@ -96,8 +103,15 @@ class GController:
             elif plot.state == "ready":
                 plot_name = plot.plant.name 
                 self.gmodel.harvest(plot_index)
-                self.missionc.on_plant_collected(self.gmodel.plots[plot_index].plant.name)
+                self.missionc.on_plant_collected(plot_name)
+                # update missions state and refresh UI
+                try:
+                    self.missionc.update_missions()
+                except Exception:
+                    pass
                 self.gview.update_plot(plot_index)
+                self.gview.update_money()
+                self.refresh_achievements_if_open()
                 from tkinter import messagebox
         except Exception as e:
             logger.error(f"Error handling plot button press: {e}")
@@ -122,7 +136,20 @@ class GController:
     def open_achievements(self):
         logger.info("Opening achievements...")
         try:
+            # ensure missions are up to date before building UI
+            try:
+                self.missionc.update_missions()
+            except Exception:
+                pass
+            # If achievements window already exists, destroy it to refresh
+            try:
+                if self.achievements_window is not None and self.achievements_window.winfo_exists():
+                    self.achievements_window.destroy()
+            except Exception:
+                pass
+
             window = tk.Toplevel(self.gview.root)
+            self.achievements_window = window
             window.title("Achievements")
             self.gview.center(window, 500, 400)
 
@@ -133,6 +160,13 @@ class GController:
                 self._create_mission_row(container, mission)
         except Exception as e:
             logger.error(f"Error opening achievements: {e}")
+
+    def refresh_achievements_if_open(self):
+        try:
+            if self.achievements_window is not None and self.achievements_window.winfo_exists():
+                self.open_achievements()
+        except Exception:
+            pass
 
     def _create_mission_row(self, parent, mission):
         bg_color = "#b6fcb6" if mission.completed else "#f0f0f0"
@@ -160,9 +194,10 @@ class GController:
 
         reward_btn = tk.Button(
             frame,
-            text=f"Get reward ({mission.reward_gold}$)",
-            command=lambda m=mission: self._claim_mission_reward(reward_btn)
+            text=f"Get reward ({mission.reward_gold}$)"
         )
+        # configure command after creation to avoid referencing before assignment
+        reward_btn.config(command=lambda m=mission, b=reward_btn: self._claim_mission_reward(m, b))
 
         if mission.completed and not mission.reward_given:
             reward_btn.config(state="normal")
@@ -171,10 +206,14 @@ class GController:
 
         reward_btn.pack(side="right", padx=10, pady=10)
 
-    def _claim_mission_reward(self, button):
-        self.missionc.update_missions()
-        self.gview.update_money()
-        button.config(state="disabled")
+    def _claim_mission_reward(self, mission, button):
+        try:
+            claimed = self.missionc.claim_reward(mission)
+            if claimed:
+                self.gview.update_money()
+                button.config(state="disabled")
+        except Exception as e:
+            logger.error(f"Error claiming mission reward: {e}")
 
         
     def on_tick_update(self, plot_index):
@@ -210,6 +249,11 @@ class GController:
                     self.gview.update_money()
                     self.gview.update_plot(plot_index)
                     self.missionc.on_plot_unlocked()
+                    try:
+                        self.missionc.update_missions()
+                    except Exception:
+                        pass
+                    self.refresh_achievements_if_open()
                 except Exception as e:
                     logger.error(f"Error purchasing plot: {e}")
             else:
@@ -294,6 +338,12 @@ class GController:
         is_able = self.shopc.buy_fertilizer(price)
         if is_able:
             self.missionc.on_fertilizer_bought()
+            try:
+                self.missionc.update_missions()
+            except Exception:
+                pass
+            self.gview.update_money()
+            self.refresh_achievements_if_open()
 
     def resume_growth(self, plot):
         logger.info(f"Resuming growth for plot {plot}")

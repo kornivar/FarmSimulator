@@ -8,9 +8,10 @@ class MCornFan(Mission):
     def on_plant_collected(self, plant_name, amount=1):
         if self.completed:
             return
-        self.collected += amount
-        if self.collected >= 30:
-            self.completed = True
+        if plant_name == "corn":
+            self.collected += amount
+            if self.collected >= 30:
+                self.completed = True
 
     def check(self, game_state) -> bool:
         return self.completed

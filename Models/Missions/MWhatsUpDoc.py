@@ -8,9 +8,11 @@ class MWhatsUpDoc(Mission):
 	def on_plant_collected(self, plant_name, amount=1):
 		if self.completed:
 			return
-		self.collected += amount
-		if self.collected >= 50:
-			self.completed = True
+		# Count only carrots
+		if plant_name == "carrot":
+			self.collected += amount
+			if self.collected >= 50:
+				self.completed = True
 
 	def check(self, game_state) -> bool:
 		return self.completed

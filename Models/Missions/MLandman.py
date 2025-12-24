@@ -9,8 +9,11 @@ class MLandman(Mission):
         if self.completed:
             return
         self.unlocked += amount
-        if self.unlocked >= 2:
+        # require unlocking 2 additional plots (total unlocked >= 5 triggers completion)
+        if self.unlocked >= 5:
             self.completed = True
 
     def check(self, game_state) -> bool:
-        return self.completed
+        # Alternatively, verify by checking actual game state unlocked plots
+        unlocked = sum(1 for p in game_state.plots if p.state != "locked")
+        return unlocked >= 5 or self.completed
