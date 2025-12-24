@@ -5,7 +5,7 @@ class AutosaveService:
 
     def __init__(self, gmodel):
         self.gmodel = gmodel
-        self.program_autosave = "program_autosave.json"
+        self.program_autosave = "app/program_autosave.json"
         self.data = {}
 
     def save_game(self):

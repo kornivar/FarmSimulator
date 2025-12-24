@@ -2,7 +2,7 @@ from Models.Mission import Mission
 
 class MLandman(Mission):
     def __init__(self):
-        super().__init__(mission_id=3, name="Landman", description="Unlock all plots.", reward_gold=600)
+        super().__init__(mission_id=3, name="Landman", description="Unlock all plots.", reward_gold=400)
         self.unlocked = 0
 
     def on_plot_unlocked(self, amount=1):
