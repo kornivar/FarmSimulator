@@ -1,11 +1,11 @@
-from DTO.PlotPurchaseDTO import PlotPurchaseDTO
-from Models.PlotModel import PlotModel
+from .PlotPurchaseDTO import PlotPurchaseDTO
+from ..Models.PlotModel import PlotModel
 
 class PlotMapper:
 
     @staticmethod
-    def from_purchase(dto: PlotPurchaseDTO, index: int) -> PlotModel:
-        plot = PlotModel(index)
+    def from_purchase(dto: PlotPurchaseDTO, plot_index: int) -> PlotModel:
+        plot = PlotModel(plot_index)
 
         if dto.has_upgrade:
             plot.fertilizer_charges = 5

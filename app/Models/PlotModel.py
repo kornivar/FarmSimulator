@@ -1,4 +1,4 @@
-from Models.Plant import Plant
+from .Plant import Plant
 
 class PlotModel:
     def __init__(self, index):
@@ -9,6 +9,14 @@ class PlotModel:
 
         self.plot_type = "basic"
         self.fertilizer_charges = 0
+
+    @property
+    def fertilizer(self):
+        return self.fertilizer_charges
+
+    @fertilizer.setter
+    def fertilizer(self, value):
+        self.fertilizer_charges = value
 
     def unlock(self):
         if self.state == "locked":
@@ -32,6 +40,8 @@ class PlotModel:
             self.state = "ready"
             callback("finish")
             return
+
+        self.state = "growing"
 
         self.remaining -= 1000
         callback("tick")

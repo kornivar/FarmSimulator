@@ -1,17 +1,17 @@
-from Models.Plant import Plant
-from Models.PlotModel import PlotModel
-from Models.Missions.MWhatsUpDoc import MWhatsUpDoc
-from Models.Missions.MCornFan import MCornFan
-from Models.Missions.MFertilizerCollector import MFertilizerCollector
-from Models.Missions.MLandman import MLandman
-from Models.Missions.MFarmer import MFarmer 
+from .Plant import Plant
+from .PlotModel import PlotModel
+from .Missions.MWhatsUpDoc import MWhatsUpDoc
+from .Missions.MCornFan import MCornFan
+from .Missions.MFertilizerCollector import MFertilizerCollector
+from .Missions.MLandman import MLandman
+from .Missions.MFarmer import MFarmer 
 import logging
 logger = logging.getLogger(__name__)
 
 class GModel:
     def __init__(self):
         logger.info("Initializing Game Model...")
-        self.money = 1300
+        self.money = 30
         self.fertilizer = 0
         self.sell_prices = {
             1: 15,
