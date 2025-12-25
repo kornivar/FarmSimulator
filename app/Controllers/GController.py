@@ -214,8 +214,7 @@ class GController:
                 button.config(state="disabled")
         except Exception as e:
             logger.error(f"Error claiming mission reward: {e}")
-
-        
+     
     def on_tick_update(self, plot_index):
         logger.info(f"Tick update for plot index {plot_index}...")
         try:

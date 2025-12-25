@@ -1,4 +1,4 @@
-from Models.Mission import Mission
+from ..Mission import Mission
 
 class MLandman(Mission):
     def __init__(self):
@@ -10,7 +10,7 @@ class MLandman(Mission):
             return
         self.unlocked += amount
         # require unlocking 2 additional plots (total unlocked >= 5 triggers completion)
-        if self.unlocked >= 5:
+        if self.unlocked >= 2:
             self.completed = True
 
     def check(self, game_state) -> bool:

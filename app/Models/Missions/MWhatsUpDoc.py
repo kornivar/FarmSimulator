@@ -1,4 +1,4 @@
-from Models.Mission import Mission
+from ..Mission import Mission
 
 class MWhatsUpDoc(Mission):
 	def __init__(self):
